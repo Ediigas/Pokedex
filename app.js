@@ -1,21 +1,32 @@
-const fetchPokemon = () => {
-  const getPokemonUrl = id => `https://pokeapi.co/api/v2/pokemon/${id}`;
+const getPokemonUrl = (id) => `https://pokeapi.co/api/v2/pokemon/${id}`;
 
-  const pokemonPromises = []
+const generatePokemonPromises = () =>
+  Array(150)
+    .fill()
+    .map((_, index) =>
+      fetch(getPokemonUrl(index + 1)).then((Response) => Response.json())
+    );
 
+const generateHTML = (pokemons) =>
+  (pokemons = pokemons.reduce((accumulator, { name, id, types }) => {
+    const elementTypes = types.map((typeInfo) => typeInfo.type.name);
 
-  for (let i = 1; i <= 150; i++) {
-    pokemonPromises.push(fetch(getPokemonUrl(i)).then(Response => Response.json()));
+    accumulator += `
+    <li class="card ${elementTypes[0]}">
+    <img class="card-image" alt="${name}"
+      src="https://pokeres.bastionbot.org/images/pokemon/${id}.png"/>
+      <h2 class="card-title">${id}. ${name}</h2>
+      <p class="card-subtitle">${elementTypes.join(" | ")}</p>
+    </li>
+    `;
+    return accumulator;
+  }, ""));
 
-  }
+const insertPokemonIntoPage = (pokemons) => {
+  const ul = document.querySelector('[data-js="pokedex"]');
+  ul.innerHTML = pokemons;
+};
 
-  Promise.all(pokemonPromises)
-    .then(pokemons => {
-      console.log(pokemons, oi)
+const pokemonPromises = generatePokemonPromises();
 
-      const ListPokemons = pokemons.reduce()
-    });
-
-}
-
-fetchPokemon()
+Promise.all(pokemonPromises).then(generateHTML).then(insertPokemonIntoPage);
